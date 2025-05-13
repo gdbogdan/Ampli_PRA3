@@ -12,24 +12,27 @@ public class CompositeProperty extends TaskProperty implements PropertyChangeLis
 
 
     public CompositeProperty(List<TaskProperty> subtasks) {
-        BigDecimal initialCost = BigDecimal.ZERO;
-
-
-        for (TaskProperty task : subtasks) {
-            initialCost = initialCost.add(task.costInEuros());
-        }
-        super(initialCost);
-
+        super(calculateInitialCost(subtasks));
 
         this.subtasks = new ArrayList<>(subtasks);
-
 
         for (TaskProperty t : subtasks) {
             t.addPropertyChangeListener(this);
         }
 
-
         recalculateCost();
+    }
+
+    // Calcula el coste inicial del composite antes de llamar al constructor
+    private static BigDecimal calculateInitialCost(List<TaskProperty> subtasks) {
+        BigDecimal total = BigDecimal.ZERO;
+        for (TaskProperty task : subtasks) {
+            total = total.add(task.costInEuros());
+        }
+        if (total.signum() <= 0) {
+            throw new IllegalArgumentException("Initial composite cost must be positive");
+        }
+        return total.setScale(2, RoundingMode.HALF_UP);
     }
 
 

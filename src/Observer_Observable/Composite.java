@@ -12,16 +12,8 @@ public class Composite extends Task implements Observer {
 
 
     public Composite(List<Task> subtasks) {
-        BigDecimal initialCost = BigDecimal.ZERO;
-
-        for (Task task : subtasks) {
-            initialCost = initialCost.add(task.costInEuros());
-        }
-
-        super(initialCost);
-
+        super(calculateInitialCost(subtasks));
         this.subtasks = new ArrayList<>(subtasks);
-
 
         for (Task t : this.subtasks) {
             t.addObserver(this);
@@ -30,6 +22,17 @@ public class Composite extends Task implements Observer {
 
     }
 
+    // Calcula el coste inicial del composite antes de llamar al constructor
+    private static BigDecimal calculateInitialCost(List<Task> subtasks) {
+        BigDecimal total = BigDecimal.ZERO;
+        for (Task task : subtasks) {
+            total = total.add(task.costInEuros());
+        }
+        if (total.signum() <= 0) {
+            throw new IllegalArgumentException("Initial composite cost must be positive");
+        }
+        return total.setScale(2, RoundingMode.HALF_UP);
+    }
 
     private void recalculateCost() {
         BigDecimal total = BigDecimal.ZERO;
